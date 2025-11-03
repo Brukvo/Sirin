@@ -25,7 +25,7 @@ PATTERNS = {
     'события': re.compile(r'\[события:(?P<event_type>\w+):?(?P<term>\d+)?\]'),
     'успеваемость': re.compile(r'\[успеваемость:(?P<term>\d+)?:?(?P<dep_name>\w+)\]'),
     'все_события': re.compile(r'\[события\]'),
-    'результаты': re.compile(r'\[результаты:(?P<exam_type>\w+):?(?P<term>\d+)?\]'),
+    'результаты': re.compile(r'\[результаты:(?P<term>\d+):?(?P<exam_type>\w+)?\]'),
 }
 
 def parse_tag(tag: str) -> Dict[str, Any]:
@@ -720,6 +720,10 @@ def render_protocol(protocol: MethodAssemblyProtocol, to_doc=False):
         decisions.add_run('Постановили:').bold = True
 
         for i, decision in enumerate(protocol.decisions.split(';'), start=1):
+            if decision.startswith('\r\n'):
+                decision = decision.replace('\r\n', '', 1)
+            decision = decision.replace('\r\n', '\n')
+
             # Находим все теги в решении
             tags = re.findall(r'\[([^\]]+)\]', decision)
             if not tags:
@@ -865,19 +869,19 @@ def doc_events(doc: Document, event_type: str, term: int):
             events.extend(ev_type.filter_by(academic_year=academic_year).all())
 
     for event in events:
-        events_text = doc.add_paragraph(f'● {event.title} ({event.date.strftime("%d.%m.%Y")}, {event.place}). Принимали участие:\n')
-        if isinstance(event, Concert):
-            for participation in event.participations:
-                if participation.student_id:
-                    events_text.add_run(f'\t— {participation.student.short_name}, {participation.student.class_level}/{participation.student.study_years} (кл. преп.: {participation.student.lead_teacher.short_name})\n')
-                if participation.ensemble_id:
-                    events_text.add_run(f'\t— {participation.ensemble.name} (рук. {participation.ensemble.teacher.short_name})\n')
-        if isinstance(event, Contest):
-            for part in event.participations:
-                if part.student_id:
-                    events_text.add_run(f'\t— {part.student.short_name}, {part.student.class_level}/{part.student.study_years} (кл. преп.: {part.student.lead_teacher.short_name}) — {part.result}')
-                if part.ensemble_id:
-                    events_text.add_run(f'{part.ensemble.name} (рук. {part.ensemble.teacher.short_name}) — {part.result}')
+        doc.add_paragraph(f'• {event.title} ({event.date.strftime("%d.%m.%Y")}, {event.place})\n')
+        # if isinstance(event, Concert):
+        #     for participation in event.participations:
+        #         if participation.student_id:
+        #             events_text.add_run(f'\t— {participation.student.short_name}, {participation.student.class_level}/{participation.student.study_years} (кл. преп.: {participation.student.lead_teacher.short_name})\n')
+        #         if participation.ensemble_id:
+        #             events_text.add_run(f'\t— {participation.ensemble.name} (рук. {participation.ensemble.teacher.short_name})\n')
+        # if isinstance(event, Contest):
+        #     for part in event.participations:
+        #         if part.student_id:
+        #             events_text.add_run(f'\t— {part.student.short_name}, {part.student.class_level}/{part.student.study_years} (кл. преп.: {part.student.lead_teacher.short_name}) — {part.result}')
+        #         if part.ensemble_id:
+        #             events_text.add_run(f'{part.ensemble.name} (рук. {part.ensemble.teacher.short_name}) — {part.result}')
     
     return doc
 
@@ -1051,20 +1055,19 @@ def html_events(event_type: str, term: int):
 
     rendered_text = '<ul>'
     for event in events:
-        rendered_text += f'<li>{event.title} ({event.date.strftime("%d.%m.%Y")}, {event.place}). Принимали участие:<ul class="uk-margin-remove">'
-        if isinstance(event, Concert):
-            for participation in event.participations:
-                if participation.student_id:
-                    rendered_text += f'<li>{participation.student.short_name}, {participation.student.class_level}/{participation.student.study_years} (кл. преп.: {participation.student.lead_teacher.short_name})</li>'
-                if participation.ensemble_id:
-                    rendered_text += f'<li>{participation.ensemble.name} (рук. {participation.ensemble.teacher.short_name})</li>'
-        if isinstance(event, Contest):
-            for part in event.participations:
-                if part.student_id:
-                    rendered_text += f'<li>{part.student.short_name}, {part.student.class_level}/{part.student.study_years} (кл. преп.: {part.student.lead_teacher.short_name}) — {part.result}</li>'
-                if part.ensemble_id:
-                    rendered_text += f'<li>{part.ensemble.name} (рук. {part.ensemble.teacher.short_name}) — {part.result}</li>'
-        rendered_text += '</ul>'
+        rendered_text += f'<li>{event.title} ({event.date.strftime("%d.%m.%Y")}, {event.place})</li>'
+        # if isinstance(event, Concert):
+        #     for participation in event.participations:
+        #         if participation.student_id:
+        #             rendered_text += f'<li>{participation.student.short_name}, {participation.student.class_level}/{participation.student.study_years} (кл. преп.: {participation.student.lead_teacher.short_name})</li>'
+        #         if participation.ensemble_id:
+        #             rendered_text += f'<li>{participation.ensemble.name} (рук. {participation.ensemble.teacher.short_name})</li>'
+        # if isinstance(event, Contest):
+        #     for part in event.participations:
+        #         if part.student_id:
+        #             rendered_text += f'<li>{part.student.short_name}, {part.student.class_level}/{part.student.study_years} (кл. преп.: {part.student.lead_teacher.short_name}) — {part.result}</li>'
+        #         if part.ensemble_id:
+        #             rendered_text += f'<li>{part.ensemble.name} (рук. {part.ensemble.teacher.short_name}) — {part.result}</li>'
     return rendered_text + '</ul>'
 
 def html_dep_report(dep: Department='все', term: int=None):
@@ -1081,10 +1084,10 @@ def html_dep_report(dep: Department='все', term: int=None):
     for report in reports:
         text += f'<span class="uk-text-bold">{report.department.title.upper()}</span><br>'
         if report.term in [1, 2, 3, 4]:
-            text += f'Всего на отделении обучающихся: {len(report.department.students)}, из них {term} четверть окончили:<ul class="uk-margin-remove">'
+            text += f'Всего на отделении обучающихся: {report.total}, из них {term} четверть окончили:<ul class="uk-margin-remove">'
         else:
             text += f'<span class="uk-text-italic">Результаты {academic_year} учебного года</span><br>'
-            text += f'Всего на отделении обучающихся: {len(report.department.students)}, из них учебный год окончили:<ul class="uk-margin-remove">'
+            text += f'Всего на отделении обучающихся: {report.total}, из них учебный год окончили:<ul class="uk-margin-remove">'
 
         if report.got_best:
             text += f'<li> отлично: {report.got_best}</li>'
@@ -1181,7 +1184,7 @@ def html_exams(exam_type: str, term: int=None):
     text = ''
     if exams:
         for exam in exams:
-            text += f'<br><span class="uk-text-italic">{exam.exam_type.name.capitalize()}, результаты</span><br>Всего сдавало обучающихся: {exam.total}, из них:<ul class="uk-margin-remove">'
+            text += f'<br><span class="uk-text-italic">{exam.exam_type.name.capitalize()} (отделение {exam.department.title.capitalize()}), результаты</span><br>Всего сдавало обучающихся: {exam.total}, из них:<ul class="uk-margin-remove">'
             if exam.got_best:
                 text += f'<li>отлично: {exam.got_best}</li>'
             if exam.got_good:

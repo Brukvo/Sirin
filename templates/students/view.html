@@ -136,7 +136,7 @@
                 <tr>
                     <td>{{ c.concert.academic_year }}</td>
                     <td>{{ c.concert.date.strftime('%d.%m.%Y') }}</td>
-                    <td><a href="{{ url_for('events.concert_view', id=c.id) }}">{{ c.concert.title }}</a></td>
+                    <td><a href="{{ url_for('events.concert_view', id=c.concert.id) }}">{{ c.concert.title }}</a></td>
                 </tr>
                 {% endfor %}
             </table>

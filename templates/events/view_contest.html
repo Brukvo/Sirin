@@ -34,10 +34,10 @@
     <tr>
         {% if p.student_id %}
         <td><a href="{{ url_for('students.view', id=p.student_id)}}">{{ p.student.short_name }}</a></td>
-        <td>{{ p.student.lead_teacher.short_name }}</td>
+        <td><a href="{{ url_for('teachers.view', id=p.student.lead_teacher_id) }}">{{ p.student.lead_teacher.short_name }}</a></td>
         {% else %}
-        <td>{{ p.ensemble.name }}:<ul>{% for m in p.ensemble.members %}<li>{{ m.short_name }}</li>{% endfor %}</ul></td>
-        <td>{{ p.ensemble.teacher.short_name }}</td>
+        <td>{{ p.ensemble.name }}:<ul>{% for m in p.ensemble.members %}<li><a href="{{ url_for('students.view', id=m.id) }}">{{ m.short_name }}</a></li>{% endfor %}</ul></td>
+        <td><a href="{{ url_for('teachers.view', id=p.ensemble.teacher_id) }}">{{ p.ensemble.teacher.short_name }}</a></td>
         {% endif %}
         <td>{{ p.result }}</td>
     </tr>

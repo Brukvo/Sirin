@@ -101,29 +101,29 @@ class TeacherCourseForm(FlaskForm):
 class ReportForm(FlaskForm):
     subject_id = SelectField('Предмет', coerce=int, validators=[DataRequired()])
     term = SelectField('Период', choices=[(1, 'I ч.'), (2, 'II ч.'), (3, 'III ч.'), (4, 'IV ч.'), (5, 'год')], coerce=int, validators=[DataRequired()])
-    total = IntegerField('Всего учеников', validators=[DataRequired()])
-    got_best = IntegerField('на 5', validators=[Optional()])
-    got_good = IntegerField('на 4', validators=[Optional()])
-    got_avg = IntegerField('на 3', validators=[Optional()])
-    got_bad = IntegerField('на 2', validators=[Optional()])
+    total = IntegerField('Всего учеников', validators=[DataRequired()], render_kw={'min': 1})
+    got_best = IntegerField('на 5', validators=[Optional()], render_kw={'min': 0})
+    got_good = IntegerField('на 4', validators=[Optional()], render_kw={'min': 0})
+    got_avg = IntegerField('на 3', validators=[Optional()], render_kw={'min': 0})
+    got_bad = IntegerField('на 2', validators=[Optional()], render_kw={'min': 0})
     submit = SubmitField('Сохранить')
 
 
 class DepartmentReportForm(FlaskForm):
     department_id = SelectField('Отделение', coerce=int, validators=[DataRequired()])
-    got_best = IntegerField('на 5', validators=[Optional()])
-    got_good = IntegerField('на 4', validators=[Optional()])
-    got_avg = IntegerField('на 3', validators=[Optional()])
-    got_bad = IntegerField('на 2', validators=[Optional()])
+    got_best = IntegerField('на 5', validators=[Optional()], render_kw={'min': 0})
+    got_good = IntegerField('на 4', validators=[Optional()], render_kw={'min': 0})
+    got_avg = IntegerField('на 3', validators=[Optional()], render_kw={'min': 0})
+    got_bad = IntegerField('на 2', validators=[Optional()], render_kw={'min': 0})
     submit = SubmitField('Сохранить')
 
 
 class ClassReportForm(FlaskForm):
     term = SelectField('Период', choices=[(1, 'I ч.'), (2, 'II ч.'), (3, 'III ч.'), (4, 'IV ч.'), (5, 'год')], coerce=int, validators=[DataRequired()])
-    got_best = IntegerField('на 5', validators=[Optional()])
-    got_good = IntegerField('на 4', validators=[Optional()])
-    got_avg = IntegerField('на 3', validators=[Optional()])
-    got_bad = IntegerField('на 2', validators=[Optional()])
+    got_best = IntegerField('на 5', validators=[Optional()], render_kw={'min': 0})
+    got_good = IntegerField('на 4', validators=[Optional()], render_kw={'min': 0})
+    got_avg = IntegerField('на 3', validators=[Optional()], render_kw={'min': 0})
+    got_bad = IntegerField('на 2', validators=[Optional()], render_kw={'min': 0})
     submit = SubmitField('Сохранить')
 
 
@@ -135,7 +135,7 @@ class LectureForm(FlaskForm):
 
 
 class OpenLessonForm(FlaskForm):
-    term = SelectField('Период', coerce=int, choices=[(1, 'I ч.'), (2, 'II ч.'), (3, 'III ч.'), (4, 'IV ч.')], validators=[DataRequired()])
+    # term = SelectField('Период', coerce=int, choices=[(1, 'I ч.'), (2, 'II ч.'), (3, 'III ч.'), (4, 'IV ч.')], validators=[DataRequired()])
     date = DateField('Дата', default=date.today, validators=[DataRequired()])
     title = StringField('Тема', validators=[DataRequired()])
     student_id = SelectField('Ученик', coerce=int, validators=[DataRequired()])
@@ -205,10 +205,10 @@ class ConcertPartForm(FlaskForm):
 # форма конкурса (без участников), поля из EventMixin + Contest
 # сначала добавить конкурс, потом участников
 class ContestForm(FlaskForm):
-    term = SelectField('Четверть', coerce=int, choices=[(1, 'I ч.'), (2, 'II ч.'), (3, 'III ч.'), (4, 'IV ч.')], validators=[DataRequired()])
+    # term = SelectField('Четверть', coerce=int, choices=[(1, 'I ч.'), (2, 'II ч.'), (3, 'III ч.'), (4, 'IV ч.')], validators=[DataRequired()])
     date = DateField('Дата', default=date.today, validators=[DataRequired()])
     place = StringField('Место проведения', validators=[Optional()])
-    title = StringField('Название концерта', validators=[DataRequired()])
+    title = StringField('Название конкурса', validators=[DataRequired()])
     teacher_id = SelectField('Ответственный', coerce=int, validators=[DataRequired()])
     submit = SubmitField('Сохранить')
 

@@ -22,7 +22,7 @@ from events import bp as events
 from departments import bp as departments
 from method import bp as method
 
-from models import Teacher, Student, Department, Concert, Contest, MethodAssembly, StudentStatus, Region
+from models import Teacher, Student, Department, Concert, Contest, MethodAssembly, StudentStatus, Region, ExamType, Subject
 from forms import MethodAssemblyForm
 from utils import get_term, get_academic_year
 from migrations import apply_migrations
@@ -221,7 +221,9 @@ def index():
     deps = Department.query.count()
     concerts = Concert.query.filter(Concert.term==get_term()).order_by(Concert.date).all()
     contests = Contest.query.filter(Contest.term==get_term()).order_by(Contest.date).all()
-    return render_template('index.html', teachers=teachers, bodies=bodies, students=students, deps=deps, concerts=concerts, contests=contests, title='Главная')
+    exam_types = ExamType.query.count()
+    subjects = Subject.query.count()
+    return render_template('index.html', teachers=teachers, bodies=bodies, students=students, deps=deps, concerts=concerts, contests=contests, exam_types=exam_types, subjects=subjects, title='Главная')
 
 
 @app.route('/shutdown', methods=['POST'])

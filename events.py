@@ -50,7 +50,7 @@ def concert_part_add():
     form = ConcertPartForm()
     ensembles = Ensemble.query.all()
     students = Student.query.filter(Student.status_id==1).order_by(Student.full_name).all()
-    concerts = Concert.query.order_by(desc(Concert.date)).limit(10).all()
+    concerts = Concert.query.order_by(desc(Concert.date)).all()
 
     if db.session.execute(select(func.count(Concert.id))).scalar_one():
         form.concert_id.choices = [(c.id, f'{c.title} ({c.date.strftime("%d.%m.%Y")})') for c in concerts]
@@ -156,7 +156,7 @@ def contest_add():
 
     if form.validate_on_submit():
         contest = Contest(
-            term=form.term.data,
+            term=get_term(form.date.data),
             academic_year=get_academic_year(form.date.data),
             date=form.date.data,
             title=form.title.data,

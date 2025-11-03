@@ -25,7 +25,7 @@ def add():
     teachers = Teacher.query.filter(Teacher.main_department_id!=0).all()
     statuses = StudentStatus.query.all()
 
-    form.department_id.choices = [(dep.id, dep.short_name) for dep in deps]
+    form.department_id.choices = [(dep.id, f'{dep.title} ({dep.short_name})') for dep in deps]
     form.lead_teacher_id.choices = [(t.id, f'{t.short_name} ({t.main_department.title})') for t in teachers]
     form.status_id.choices = [(s.id, s.status) for s in statuses]
     if request.method == 'POST':

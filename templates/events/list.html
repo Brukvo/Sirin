@@ -5,84 +5,113 @@
 {% block content %}
 <h2>{{title}}</h2>
 
-<!-- Концерты -->
-<h3>Концерты
-    <a href="{{ url_for('events.get_events') }}" class="uk-icon-button" uk-icon="cloud-download" uk-tooltip="title: Скачать план мероприятий; pos: bottom"></a>
-    <a href="{{ url_for('events.concert_add') }}" class="uk-icon-button" uk-icon="plus" uk-tooltip="title: Добавить концерт; pos: bottom"></a>
-    <a href="{{ url_for('events.concert_part_add') }}" class="uk-icon-button" uk-icon="user" uk-tooltip="title: Добавить участника; pos: bottom"></a>
-</h3>
+<ul class="uk-subnav uk-subnav-pill uk-border-rounded" uk-switcher>
+    <li><a href="#">Концерты</a></li>
+    <li><a href="#">Конкурсы</a></li>
+</ul>
+<div class="uk-switcher uk-margin">
+    <!-- Концерты -->
+    <div>
+        <div class="uk-inline">
+            <a href="{{ url_for('events.get_events') }}" class="uk-icon-button" uk-icon="cloud-download"
+                uk-tooltip="title: Скачать план мероприятий; pos: bottom"></a>
+            <a href="{{ url_for('events.concert_add') }}" class="uk-icon-button" uk-icon="plus"
+                uk-tooltip="title: Добавить концерт; pos: bottom"></a>
+            <a href="{{ url_for('events.concert_part_add') }}" class="uk-icon-button" uk-icon="user"
+                uk-tooltip="title: Добавить участника; pos: bottom"></a>
+        </div>
+        {% if concerts %}
+        <table class="uk-table">
+            <thead>
+                <tr>
+                    <th class="uk-table-shrink">&nbsp;</th>
+                    <th>Уч. год</th>
+                    <th>Ч</th>
+                    <th>Дата</th>
+                    <th>Название</th>
+                    <th>Место</th>
+                    <th>Ответственный</th>
+                    <th class="uk-text-center"><span uk-icon="users"
+                            uk-tooltip="title: Число участников; pos: top"></span></th>
+                    <th>&nbsp;</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for concert in concerts %}
+                <tr>
+                    <td><span class="uk-text-{% if concert.has_passed %}success{% else %}warning{% endif %}">●</span>
+                    </td>
+                    <td>{{ concert.academic_year }}</td>
+                    <td>{{ concert.term }}</td>
+                    <td>{{ concert.date.strftime('%d.%m.%Y') }}</td>
+                    <td><a href="{{ url_for('events.concert_view', id=concert.id) }}">{{ concert.title }}</a></td>
+                    <td>{{ concert.place }}</td>
+                    <td class="uk-text-nowrap"><a href="{{ url_for('teachers.view', id=concert.teacher_id) }}">{{
+                            concert.teacher.short_name }}</a></td>
+                    <td class="uk-text-center">{{ concert.participations|count }}</td>
+                    <td class="uk-text-nowrap"><a href="{{ url_for('events.concert_part_add', c_id=concert.id) }}"
+                            class="uk-icon-button" uk-icon="user"
+                            uk-tooltip="title: Добавить участника; pos: bottom"></a>
+                        <a href="{{ url_for('events.concert_edit', id=concert.id) }}" class="uk-icon-button"
+                            uk-icon="pencil" uk-tooltip="title: Изменить концерт; pos: bottom"></a>
+                        {% if not concert.has_passed %}<a href="{{ url_for('events.concert_complete', id=concert.id) }}"
+                            class="uk-icon-button uk-text-success" uk-icon="check"
+                            uk-tooltip="title: Завершить концерт; pos: bottom"></a>{% else %}<span
+                            class="uk-icon-button uk-disabled" uk-icon="ban"></span>{% endif %}
+                        <a href="{{ url_for('events.concert_delete', c_id=concert.id) }}"
+                            class="uk-icon-button uk-text-danger" uk-tooltip="title: Удалить концерт; pos: bottom"
+                            uk-icon="trash"></a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Нет зафиксированных концертов</p>
+        {% endif %}
+    </div>
+    <!-- /Концерты -->
+    <!-- Конкурсы -->
+    <div>
+        <div class="uk-inline">
+            <a href="{{ url_for('events.contest_add') }}" class="uk-icon-button" uk-icon="plus"
+                uk-tooltip="title: Добавить конкурс; pos: bottom"></a>
+            <a href="{{ url_for('events.contest_part_add') }}" class="uk-icon-button" uk-icon="user"
+                uk-tooltip="title: Добавить участника; pos: bottom"></a>
+        </div>
 
-
-{% if concerts %}
-<table class="uk-table">
-    <thead>
-        <tr>
-            <th class="uk-table-shrink">&nbsp;</th>
-            <th>Уч. год</th>
-            <th>Ч</th>
-            <th>Дата</th>
-            <th>Название</th>
-            <th>Место</th>
-            <th>Ответственный</th>
-            <th class="uk-text-center"><span uk-icon="users" uk-tooltip="title: Число участников; pos: top"></span></th>
-            <th>&nbsp;</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for concert in concerts %}
-    <tr>
-        <td><span class="uk-text-{% if concert.has_passed %}success{% else %}warning{% endif %}">●</span></td>
-        <td>{{ concert.academic_year }}</td>
-        <td>{{ concert.term }}</td>
-        <td>{{ concert.date.strftime('%d.%m.%Y') }}</td>
-        <td><a href="{{ url_for('events.concert_view', id=concert.id) }}">{{ concert.title }}</a></td>
-        <td>{{ concert.place }}</td>
-        <td><a href="{{ url_for('teachers.view', id=concert.teacher_id) }}">{{ concert.teacher.short_name }}</a></td>
-        <td class="uk-text-center">{{ concert.participations|count }}</td>
-        <td><a href="{{ url_for('events.concert_part_add', c_id=concert.id) }}" class="uk-icon-button" uk-icon="user" uk-tooltip="title: Добавить участника; pos: bottom"></a>
-        <a href="{{ url_for('events.concert_edit', id=concert.id) }}" class="uk-icon-button" uk-icon="pencil" uk-tooltip="title: Изменить концерт; pos: bottom"></a>
-        {% if not concert.has_passed %}<a href="{{ url_for('events.concert_complete', id=concert.id) }}" class="uk-icon-button uk-text-success" uk-icon="check" uk-tooltip="title: Завершить концерт; pos: bottom"></a>{% else %}<span class="uk-icon-button uk-disabled" uk-icon="ban"></span>{% endif %}
-        <a href="{{ url_for('events.concert_delete', c_id=concert.id) }}" class="uk-icon-button uk-text-danger" uk-tooltip="title: Удалить концерт; pos: bottom" uk-icon="trash"></a></td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>Нет зафиксированных концертов</p>
-{% endif %}
-
-<!-- Конкурсы -->
-<h3>Конкурсы
-    <a href="{{ url_for('events.contest_add') }}" class="uk-icon-button" uk-icon="plus" uk-tooltip="title: Добавить конкурс; pos: bottom"></a>
-    <a href="{{ url_for('events.contest_part_add') }}" class="uk-icon-button" uk-icon="user" uk-tooltip="title: Добавить участника; pos: bottom"></a>
-</h3>
-{% if contests %}
-<table class="uk-table uk-table-small">
-    <thead>
-        <tr>
-            <th>Уч. год</th>
-            <th>Четверть</th>
-            <th>Дата</th>
-            <th>Название</th>
-            <th>Место</th>
-            <th>Ответственный</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for contest in contests %}
-    <tr>
-        <td>{{ contest.academic_year }}</td>
-        <td>{{ contest.term }}</td>
-        <td>{{ contest.date.strftime('%d.%m.%Y') }}</td>
-        <td><a href="{{ url_for('events.contest_view', id=contest.id) }}">{{ contest.title }}</a></td>
-        <td>{{ contest.place }}</td>
-        <td><a href="{{ url_for('teachers.view', id=contest.teacher_id) }}">{{ contest.teacher.short_name }}</a></td>
-        <td><a href="{{ url_for('events.contest_part_add', contest_id=contest.id) }}" class="uk-icon-button" uk-icon="user" uk-tooltip="title: Добавить участника; pos: bottom"></a></td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
-{% else %}
-<p>Нет зафиксированных конкурсов</p>
-{% endif %}
+        {% if contests %}
+        <table class="uk-table">
+            <thead>
+                <tr>
+                    <th>Уч. год</th>
+                    <th>Ч</th>
+                    <th>Дата</th>
+                    <th>Название</th>
+                    <th>Место</th>
+                    <th>Ответственный</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for contest in contests %}
+                <tr>
+                    <td>{{ contest.academic_year }}</td>
+                    <td>{{ contest.term }}</td>
+                    <td>{{ contest.date.strftime('%d.%m.%Y') }}</td>
+                    <td><a href="{{ url_for('events.contest_view', id=contest.id) }}">{{ contest.title }}</a></td>
+                    <td>{{ contest.place }}</td>
+                    <td><a href="{{ url_for('teachers.view', id=contest.teacher_id) }}">{{ contest.teacher.short_name }}</a>
+                    </td>
+                    <td><a href="{{ url_for('events.contest_part_add', contest_id=contest.id) }}" class="uk-icon-button"
+                            uk-icon="user" uk-tooltip="title: Добавить участника; pos: bottom"></a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>Нет зафиксированных конкурсов</p>
+        {% endif %}
+    </div>
+    <!-- /Конкурсы -->
+</div>
 {% endblock %}

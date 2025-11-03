@@ -8,7 +8,7 @@
     <tr>
         <th class="uk-width-1-3">Период</th>
         <span class="uk-width-1-2">
-        <th><span uk-tooltip="title: Классное руководство; pos: top">КР</span></th>
+        <th><span uk-tooltip="title: Отчёты по отделениям; pos: top">ОО</span></th>
         <th><span uk-tooltip="title: Доклады; pos: top">Д</span></th>
         <th><span uk-tooltip="title: Открытые уроки; pos: top">ОУ</span></th>
         <th><span uk-tooltip="title: Курсы повышения квалификации и профессиональной переподготовки; pos: top">К</span></th>
@@ -22,11 +22,11 @@
     <tr>
         <td>{% if term in [1, 2, 3, 4] %}{{term}} четверть{% else %}Год{% endif %}</td>
         <td><span class="uk-text-{% if class_reports[term] %}success{% else %}warning{% endif %}" uk-tooltip="title: {% if class_reports[term] %}Данные по всем отделениям есть в базе, можно выгрузить отчёт{% else %}Данных нет или недостаточно для формирования отчёта, проверьте страницу отделений{% endif %}; pos: top">●</span></td>
-        <td><span class="uk-text-{% if lectures[term] %}success{% else %}primary{% endif %}">●</span></td>
-        <td><span class="uk-text-{% if open_lessons[term] %}success{% else %}primary{% endif %}">●</span></td>
-        <td><span class="uk-text-{% if courses[term] %}success{% else %}primary{% endif %}">●</span></td>
-        <td><span class="uk-text-{% if concerts[term] %}success{% else %}primary{% endif %}">●</span></td>
-        <td><span class="uk-text-{% if contests[term] %}success{% else %}primary{% endif %}">●</span></td>
+        <td>{% if term != 5 %}<span class="uk-text-{% if lectures[term] %}success{% else %}primary{% endif %}">●</span>{% endif %}</td>
+        <td>{% if term != 5 %}<span class="uk-text-{% if open_lessons[term] %}success{% else %}primary{% endif %}">●</span>{% endif %}</td>
+        <td>{% if term != 5 %}<span class="uk-text-{% if courses[term] %}success{% else %}primary{% endif %}">●</span>{% endif %}</td>
+        <td>{% if term != 5 %}<span class="uk-text-{% if concerts[term] %}success{% else %}primary{% endif %}">●</span>{% endif %}</td>
+        <td>{% if term != 5 %}<span class="uk-text-{% if contests[term] %}success{% else %}primary{% endif %}">●</span>{% endif %}</td>
         <td class="uk-text-center">{% if class_reports[term] %}
             <a href="{{ url_for('method.report_get_by_term', term=term) }}" class="uk-icon-button uk-button-default" uk-icon="pull" uk-tooltip="title: Скачать отчёт по работе объединения; pos: bottom"></a>
             {% endif %}

@@ -40,7 +40,7 @@
                 <td class="uk-table-shrink">{% if teacher.is_combining %}<span class="uk-text-primary" uk-tooltip="Совместитель">●</span>{% endif %}</td>
                 <td><a href="{{ url_for('teachers.view', id=teacher.id) }}">{{ teacher.full_name }}</a></td>
                 <td class="uk-text-center"><a href="{{ url_for('departments.view', id=teacher.main_department_id) }}">{{ teacher.main_department.title }}</a></td>
-                <td class="uk-text-center">{% if teacher.main_department_id %}{{ teacher.students|count }}{% endif %}</td>
+                <td class="uk-text-center">{% if students[teacher.id] %}{{ students[teacher.id] }}{% endif %}</td>
                 {% for report in t_reports[teacher.id] %}
                 <td class="uk-text-center">{% if teacher.main_department_id %}<span class="uk-text-{% if report %}success{% else %}warning{% endif %}">●</span>{% endif %}</td>
                 {% endfor %}

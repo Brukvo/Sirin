@@ -9,6 +9,7 @@ bp = Blueprint('teachers', __name__, url_prefix='/teachers')
 @bp.route('/')
 def all():
     teachers = Teacher.query.all()
+    t_students = {t.id: Student.query.filter_by(lead_teacher_id=t.id, status_id=1).count() for t in teachers}
     t_c_reports = {t.id: [False, False, False, False, False] for t in teachers}
     all_c_reports = ClassReportItem.query.filter_by(academic_year=get_academic_year())
     for t in teachers:
@@ -16,7 +17,7 @@ def all():
             for report in all_c_reports:
                 if report.term == term and report.teacher_id == t.id:
                     t_c_reports[t.id][term-1] = True
-    return render_template('teachers/list.html', teachers=teachers, t_reports=t_c_reports, title='Список преподавателей')
+    return render_template('teachers/list.html', teachers=teachers, t_reports=t_c_reports, title='Список преподавателей', students=t_students)
 
 @bp.route('/add', methods=['POST', 'GET'])
 def add():
@@ -47,7 +48,9 @@ def view(id):
     class_reports = db.session.query(ClassReportItem).filter(ClassReportItem.teacher_id==teacher.id).order_by(ClassReportItem.term).all() if teacher.class_reports else None
     lectures = db.session.query(LectureItem).filter(LectureItem.teacher_id==teacher.id).order_by(LectureItem.term, LectureItem.date).all() if teacher.lecture_items else None
     open_lessons = db.session.query(OpenLessonItem).filter(OpenLessonItem.teacher_id==id).order_by(OpenLessonItem.term, OpenLessonItem.date).all() if teacher.open_lesson_items else None
-    students = db.session.query(Student).filter(Student.lead_teacher_id==id, Student.status_id==1).order_by(Student.class_level, Student.full_name).all()
+    s_query = Student.query.filter_by(lead_teacher_id=id, status_id=1).order_by(Student.class_level, Student.full_name)
+    students = s_query.all()
+    students_count = s_query.count()
     for student in students:
         student.ensemble_participations = []
         student.contest_ens_participations = []
@@ -64,7 +67,7 @@ def view(id):
             ).all()
             student.ensemble_participations.extend(participations)
             student.contest_ens_participations.extend(ens_participations)
-    return render_template('teachers/view.html', teacher=teacher, title=teacher.full_name, reports=reports, class_reports=class_reports, lectures=lectures, open_lessons=open_lessons, students=students)
+    return render_template('teachers/view.html', teacher=teacher, title=teacher.full_name, reports=reports, class_reports=class_reports, lectures=lectures, open_lessons=open_lessons, students=students, total=students_count)
 
 
 @bp.route('/<int:id>/edit', methods=['POST', 'GET'])
@@ -154,13 +157,13 @@ def send_report(id):
 def send_class_report(id):
     teacher = Teacher.query.get_or_404(id)
     form = ClassReportForm()
-    total = len(teacher.students)
+    total = Student.query.filter_by(lead_teacher_id=teacher.id, status_id=1).count()
     if request.method == 'GET':
         form.term.data = get_term()
     if form.validate_on_submit():
         for field in [form.got_avg, form.got_bad, form.got_best, form.got_good]:
             field.data = 0 if field.data is None else field.data
-        if len(teacher.students) != form.got_best.data + form.got_good.data + form.got_avg.data + form.got_bad.data:
+        if total != form.got_best.data + form.got_good.data + form.got_avg.data + form.got_bad.data:
             flash('Общее количество учеников не совпадает с введёнными данными', 'danger')
             return redirect(url_for('teachers.send_class_report', id=teacher.id))
         try:
@@ -195,7 +198,7 @@ def send_class_report(id):
     else:
         print(form.errors)
         
-    return render_template('teachers/add_class_report.html', form=form, title='Добавление отчёта по классному руководству', teacher=teacher)
+    return render_template('teachers/add_class_report.html', form=form, title='Добавление отчёта по классному руководству', teacher=teacher, total=total)
 
 
 @bp.route('/<int:id>/lecture', methods=['GET', 'POST'])
@@ -240,8 +243,8 @@ def send_open_lesson(id):
     if form.validate_on_submit():
         try:
             open_lesson = OpenLessonItem(
-                term=form.term.data,
-                academic_year=get_academic_year(),
+                term=get_term(form.date.data),
+                academic_year=get_academic_year(form.date.data),
                 date=form.date.data,
                 title=form.title.data,
                 teacher_id=teacher.id,
@@ -277,7 +280,9 @@ def add_course(id):
                 start_date=form.start_date.data,
                 end_date=form.end_date.data,
                 place=form.place.data,
-                cert_no=form.cert_no.data
+                cert_no=form.cert_no.data,
+                academic_year=get_academic_year(form.end_date.data),
+                term=get_term(form.end_date.data)
             )
             db.session.add(course)
             db.session.commit()

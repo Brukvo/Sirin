@@ -4,7 +4,7 @@
 
 {% block content %}
 <h2>{{title}}</h2>
-<p>Отделение: <b>{{dep.title}}</b>, количество учеников: <b>{{dep.students|count}}</b></p>
+<p>Отделение: <b>{{dep.title}}</b>, количество учеников: <b>{{ students }}</b></p>
 <form action="{{ url_for('departments.report', id=dep.id) }}" method="post">
 {{form.csrf_token}}
 <div uk-grid>

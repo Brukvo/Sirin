@@ -152,11 +152,12 @@ def report(id):
     form = DepartmentReportForm()
     form.department_id.choices = [(d.id, d.title) for d in Department.query.all()]
     form.department_id.data = id
+    students = Student.query.filter_by(department_id=dep.id, status_id=1).count()
     
     if form.validate_on_submit():
         for field in [form.got_avg, form.got_bad, form.got_best, form.got_good]:
             field.data = 0 if field.data is None else field.data
-        if len(dep.students) != form.got_best.data + form.got_good.data + form.got_avg.data + form.got_bad.data:
+        if students != form.got_best.data + form.got_good.data + form.got_avg.data + form.got_bad.data:
             flash('Количество учеников отделения не совпадает с введёнными данными', 'warning')
             return redirect(url_for('departments.report', id=id))
         try:
@@ -164,13 +165,13 @@ def report(id):
                 academic_year=get_academic_year(),
                 term=get_term(),
                 department_id=id,
-                total=len(dep.students),
+                total=students,
                 got_best=form.got_best.data,
                 got_good=form.got_good.data,
                 got_avg=form.got_avg.data,
                 got_bad=form.got_bad.data,
-                quantity=round((sum([form.got_best.data, form.got_good.data, form.got_avg.data]) / len(dep.students)) * 100),
-                quality=round((sum([form.got_best.data, form.got_good.data]) / len(dep.students)) * 100)
+                quantity=round((sum([form.got_best.data, form.got_good.data, form.got_avg.data]) / students) * 100),
+                quality=round((sum([form.got_best.data, form.got_good.data]) / students) * 100)
             )
             db.session.add(d_report)
             db.session.commit()
@@ -183,7 +184,7 @@ def report(id):
     else:
         print(form.errors)
     
-    return render_template('departments/add_report.html', dep=dep, title='Отчёт отделения по успеваемости', form=form)
+    return render_template('departments/add_report.html', dep=dep, title='Отчёт отделения по успеваемости', form=form, students=students)
             
 @bp.route('/get_all_students')
 def get_all_students():
