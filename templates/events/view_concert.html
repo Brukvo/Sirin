@@ -27,20 +27,25 @@
     </tr>
     {% for p in concert.participations %}
     <tr>
+        {% if p.student_id is not none %}
         <td>
-            {% if p.student_id %}
             <a href="{{ url_for('students.view', id=p.student_id)}}">{{ p.student.short_name }}</a>
-            {% else %}
-            {{ p.ensemble.name }} ({% for m in p.ensemble.members %}{{ m.short_name }}, {% endfor %})
-            {% endif %}
         </td>
+        {% else %}
         <td>
-            {% if p.student_id %}
-            <a href="{{ url_for('teachers.view', id=p.student.lead_teacher_id) }}">{{ p.student.lead_teacher.short_name }}</a>
-            {% else %}
-            <a href="{{ url_for('teachers.view', id=p.ensemble.teacher_id) }}">{{ p.ensemble.teacher.short_name }}</a>
-            {% endif %}
+            {% set ens_parts = p.ensemble.members | map(attribute='short_name') | list %}
+            {{ p.ensemble.name }} ({{ens_parts|join(', ')}})
         </td>
+        {% endif %}
+        {% if p.student_id is not none %}
+        <td>
+            <a href="{{ url_for('teachers.view', id=p.student.lead_teacher_id) }}">{{ p.student.lead_teacher.short_name }}</a>
+        </td>
+        {% else %}
+        <td>
+            <a href="{{ url_for('teachers.view', id=p.ensemble.teacher_id) }}">{{ p.ensemble.teacher.short_name }}</a>
+        </td>
+        {% endif %}
         <td>
             <a href="{{ url_for('events.concert_delete_participant', c_id=concert.id, p_id=p.id) }}" class="uk-icon-button" uk-icon="trash" uk-tooltip="title: Удалить участника; pos: bottom"></a>
         </td>

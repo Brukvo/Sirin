@@ -70,28 +70,27 @@ def concert_part_add():
         form.concert_id.data = request.args.get('c_id', type=int)
 
     if form.validate_on_submit():
-        try:    
+        if not form.student_id.data and not form.ensemble_id.data:
+            flash('Нужно добавить или ученика, или коллектив', 'warning')
+            return redirect(url_for('events.concert_part_add'))
+        elif form.student_id.data and form.ensemble_id.data:
+            flash('Нельзя добавить одновременно и ученика, и коллектив', 'warning')
+            return redirect(url_for('events.concert_part_add'))
+        
+        try:
             concert_part = ConcertParticipation(
-                concert_id=form.concert_id.data,
-                student_id=form.student_id.data if form.student_id.data else None,
-                ensemble_id=form.ensemble_id.data if form.ensemble_id.data else None
+                concert_id=int(form.concert_id.data),
+                student_id=int(form.student_id.data) if form.student_id.data else None,
+                ensemble_id=int(form.ensemble_id.data) if form.ensemble_id.data else None
             )
             db.session.add(concert_part)
             db.session.commit()
             flash('Участник концерта успешно добавлен', 'success')
             return redirect(url_for('events.concert_view', id=form.concert_id.data))
         except IntegrityError as ie:
-            if not form.student_id.data and not form.ensemble_id.data:
-                flash('Нужно добавить или ученика, или коллектив', 'warning')
-            elif form.student_id.data and form.ensemble_id.data:
-                flash('Нельзя добавить одновременно и ученика, и коллектив', 'warning')
-            else:
-                flash('Этот участник уже принимает участие в концерте', 'warning')
+            flash('Этот участник уже принимает участие в концерте', 'warning')
             db.session.rollback()
             return redirect(url_for('events.concert_part_add'))
-    else:
-        print(form.concert_id.data, form.errors)
-    
     return render_template('events/add_concert_participant.html', form=form, title='Добавление участника концерта')
 
 @bp.route('/concert/<int:id>/edit', methods=['GET', 'POST'])
